@@ -236,6 +236,42 @@ def test_apply_provisionally_accepted_decisions():
     assert num_duplicates == '0'
 
 
+def test_removing_provisionally_accepted_decision():
+    # navigate back to the tasks dashboard
+    dataset_id = re.findall(r'.*\/dataset\/([0-9]+)\/tasks.*', browser.current_url)[0]
+    browser.get('http://' + config.HOSTNAME + ':' + config.PORT + '/dataset/' + dataset_id + '/tasks')
+    time.sleep(3)
+
+    # record number of ACC-ACC species (same authors) duplicates
+    target_xpath = '//*[text()[contains(., "ACC-ACC species (same authors)")]]'
+    num_duplicates = browser.\
+        find_element_by_xpath(target_xpath + '/strong')\
+        .text
+    assert num_duplicates == '0'
+
+    # navigate to duplicates page
+    browser.\
+        find_element_by_xpath(target_xpath).click()
+    browser.get(browser.current_url.replace('withDecision=false', 'withDecision=true'))
+    time.sleep(3)
+
+    # remove provisionally accepted decisions
+    browser.find_element_by_css_selector(
+        'tr.ant-table-row:nth-child(1) > td:nth-child(3) > div:nth-child(1) > i:nth-child(1)').click()
+    browser.find_element_by_css_selector(
+        'tr.ant-table-row:nth-child(2) > td:nth-child(3) > div:nth-child(1) > i:nth-child(1)').click()
+
+    # navigate back to tasks
+    browser.get('http://' + config.HOSTNAME + ':' + config.PORT + '/dataset/' + dataset_id + '/tasks')
+    time.sleep(3)
+
+    # check if the number of ACC-ACC species (same authors) duplicates is 1
+    num_duplicates = browser. \
+        find_element_by_xpath(target_xpath + '/strong') \
+        .text
+    assert num_duplicates == '1'
+
+
 # import warning indicator should not be present
 def test_uncaught_warning_displayed():
     try:
