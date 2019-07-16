@@ -158,6 +158,84 @@ def test_apply_ambiguous_synonym_decisions():
     assert num_duplicates == '0'
 
 
+# test applying blocking decisions
+def test_apply_blocking_decisions():
+    # navigate back to the tasks dashboard
+    dataset_id = re.findall(r'.*\/dataset\/([0-9]+)\/tasks.*', browser.current_url)[0]
+    browser.get('http://' + config.HOSTNAME + ':' + config.PORT + '/dataset/' + dataset_id + '/tasks')
+    time.sleep(3)
+
+    # record number of SYN-SYN species (same parent, same authors) duplicates
+    target_xpath = '//*[text()[contains(., "SYN-SYN species (same parent, same authors)")]]'
+    num_duplicates = browser.\
+        find_element_by_xpath(target_xpath + '/strong')\
+        .text
+    assert num_duplicates == '1'
+
+    # navigate to duplicates page
+    browser.\
+        find_element_by_xpath(target_xpath).click()
+    time.sleep(2)
+
+    # click the first synonym checkbox
+    browser.find_element_by_xpath('//table/tbody/tr[1]/td[1]/span/label/span/input').click()
+
+    # apply ambiguous synonyms decisions
+    wait.wait_until_xpath_clickable(browser, '//*[text()[contains(., "Pick decision")]]')
+    browser.find_element_by_xpath('//*[text()[contains(., "Pick decision")]]').click()
+    browser.find_element_by_xpath("//div/ul/li[2]/ul/li[1]").click()  # click block
+    browser.find_element_by_xpath('//button[contains(.,"Apply decision")]').click()
+
+    # navigate back to the tasks dashboard
+    browser.get('http://' + config.HOSTNAME + ':' + config.PORT + '/dataset/' + dataset_id + '/tasks')
+    time.sleep(3)
+
+    # check if the number of SYN-SYN species (same parent, same authors) duplicates is 0
+    num_duplicates = browser.\
+        find_element_by_xpath(target_xpath + '/strong')\
+        .text
+    assert num_duplicates == '0'
+
+
+# test applying provisionally accepted name
+def test_apply_provisionally_accepted_decisions():
+    # navigate back to the tasks dashboard
+    dataset_id = re.findall(r'.*\/dataset\/([0-9]+)\/tasks.*', browser.current_url)[0]
+    browser.get('http://' + config.HOSTNAME + ':' + config.PORT + '/dataset/' + dataset_id + '/tasks')
+    time.sleep(3)
+
+    # record number of ACC-ACC species (same authors) duplicates
+    target_xpath = '//*[text()[contains(., "ACC-ACC species (same authors)")]]'
+    num_duplicates = browser.\
+        find_element_by_xpath(target_xpath + '/strong')\
+        .text
+    assert num_duplicates == '1'
+
+    # navigate to duplicates page
+    browser.\
+        find_element_by_xpath(target_xpath).click()
+    time.sleep(2)
+
+    # click the check all checkbox
+    browser.find_element_by_xpath('//table/thead/tr/th[1]/span/div/span[1]/div/label/span/input').click()
+
+    # apply provisionally accepted decisions
+    wait.wait_until_xpath_clickable(browser, '//*[text()[contains(., "Pick decision")]]')
+    browser.find_element_by_xpath('//*[text()[contains(., "Pick decision")]]').click()
+    browser.find_element_by_xpath("//ul/li[1]/ul/li[2]").click()  # click provisionally accepted
+    browser.find_element_by_xpath('//button[contains(.,"Apply decision")]').click()
+
+    # navigate back to the tasks dashboard
+    browser.get('http://' + config.HOSTNAME + ':' + config.PORT + '/dataset/' + dataset_id + '/tasks')
+    time.sleep(3)
+
+    # check if the number of ACC-ACC species (same authors) duplicates is 0
+    num_duplicates = browser.\
+        find_element_by_xpath(target_xpath + '/strong')\
+        .text
+    assert num_duplicates == '0'
+
+
 # import warning indicator should not be present
 def test_uncaught_warning_displayed():
     try:
